@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feet and Inches Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input {
+            width: 50px;
+        }
+        button {
+            margin-top: 10px;
+            display: block;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feet & Inches Calculator</h1>
+
+        <!-- First Value Input -->
+        <label for="feet1">Feet:</label>
+        <input type="number" id="feet1" name="feet1" min="0" value="0">
+        <label for="inches1">Inches:</label>
+        <input type="number" id="inches1" name="inches1" min="0" max="11" value="0">
+        <label for="num1">Fraction Numerator:</label>
+        <input type="number" id="num1" name="num1" min="0" value="0">
+        <label for="den1">Fraction Denominator:</label>
+        <input type="number" id="den1" name="den1" min="1" value="64">
+
+        <!-- Second Value Input -->
+        <h3>Second Value:</h3>
+        <label for="feet2">Feet:</label>
+        <input type="number" id="feet2" name="feet2" min="0" value="0">
+        <label for="inches2">Inches:</label>
+        <input type="number" id="inches2" name="inches2" min="0" max="11" value="0">
+        <label for="num2">Fraction Numerator:</label>
+        <input type="number" id="num2" name="num2" min="0" value="0">
+        <label for="den2">Fraction Denominator:</label>
+        <input type="number" id="den2" name="den2" min="1" value="64">
+
+        <!-- Division Input -->
+        <h3>Division:</h3>
+        <label for="feetDivisor">Divisor Feet:</label>
+        <input type="number" id="feetDivisor" name="feetDivisor" min="0" value="0">
+        <label for="inchesDivisor">Divisor Inches:</label>
+        <input type="number" id="inchesDivisor" name="inchesDivisor" min="0" max="11" value="0">
+        <label for="numDivisor">Divisor Numerator:</label>
+        <input type="number" id="numDivisor" name="numDivisor" min="0" value="0">
+        <label for="denDivisor">Divisor Denominator:</label>
+        <input type="number" id="denDivisor" name="denDivisor" min="1" value="64">
+
+        <!-- Operation Buttons -->
+        <button id="add">Add</button>
+        <button id="subtract">Subtract</button>
+        <button id="divide">Divide</button>
+
+        <!-- Result -->
+        <div class="result">
+            <h3>Result:</h3>
+            <p id="result"></p>
+        </div>
+    </div>
+
+    <script>
+        function toTotalInches(feet, inches, numerator, denominator) {
+            const fraction = numerator / denominator;
+            return (feet * 12) + inches + fraction;
+        }
+
+        function simplifyFraction(numerator, denominator) {
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const divisor = gcd(numerator, denominator);
+            return { num: numerator / divisor, denom: denominator / divisor };
+        }
+
+        function roundToNearestFraction(fraction) {
+            const fractions = [
+                { num: 0, denom: 1 }, // 0
+                { num: 1, denom: 8 }, // 1/8
+                { num: 1, denom: 4 }, // 1/4
+                { num: 3, denom: 8 }, // 3/8
+                { num: 1, denom: 2 }, // 1/2
+                { num: 5, denom: 8 }, // 5/8
+                { num: 3, denom: 4 }, // 3/4
+                { num: 1, denom: 1 }  // 1
+            ];
+
+            let closest = fractions[0];
+            let minDifference = Math.abs(fraction - closest.num / closest.denom);
+
+            for (const frac of fractions) {
+                const difference = Math.abs(fraction - (frac.num / frac.denom));
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    closest = frac;
+                }
+            }
+
+            return closest;
+        }
+
+        function displayResult(totalInches, operation) {
+            if (operation === 'divide') {
+                // Display result as a plain decimal number
+                document.getElementById('result').textContent = totalInches.toFixed(4);
+            } else {
+                // Convert total inches back to feet, inches, and fractions
+                const feet = Math.floor(totalInches / 12);
+                const inches = Math.floor(totalInches % 12);
+                const rawFraction = totalInches - Math.floor(totalInches);
+                const roundedFraction = roundToNearestFraction(rawFraction);
+                
+                // Display the result in feet, inches, and simplified fraction
+                const fractionStr = (roundedFraction.num === 0) ? 
+                    "0" : `${roundedFraction.num}/${roundedFraction.denom}`;
+                    
+                document.getElementById('result').textContent = 
+                    `${feet} feet, ${inches} inches, ${fractionStr}`;
+            }
+        }
+
+        document.getElementById('add').addEventListener('click', function() {
+            const feet1 = parseFloat(document.getElementById('feet1').value);
+            const inches1 = parseFloat(document.getElementById('inches1').value);
+            const numerator1 = parseFloat(document.getElementById('num1').value);
+            const denominator1 = parseFloat(document.getElementById('den1').value);
+
+            const feet2 = parseFloat(document.getElementById('feet2').value);
+            const inches2 = parseFloat(document.getElementById('inches2').value);
+            const numerator2 = parseFloat(document.getElementById('num2').value);
+            const denominator2 = parseFloat(document.getElementById('den2').value);
+
+            const total1 = toTotalInches(feet1, inches1, numerator1, denominator1);
+            const total2 = toTotalInches(feet2, inches2, numerator2, denominator2);
+            
+            const totalResult = total1 + total2;
+
+            displayResult(totalResult, 'add');
+        });
+
+        document.getElementById('subtract').addEventListener('click', function() {
+            const feet1 = parseFloat(document.getElementById('feet1').value);
+            const inches1 = parseFloat(document.getElementById('inches1').value);
+            const numerator1 = parseFloat(document.getElementById('num1').value);
+            const denominator1 = parseFloat(document.getElementById('den1').value);
+
+            const feet2 = parseFloat(document.getElementById('feet2').value);
+            const inches2 = parseFloat(document.getElementById('inches2').value);
+            const numerator2 = parseFloat(document.getElementById('num2').value);
+            const denominator2 = parseFloat(document.getElementById('den2').value);
+
+            const total1 = toTotalInches(feet1, inches1, numerator1, denominator1);
+            const total2 = toTotalInches(feet2, inches2, numerator2, denominator2);
+            
+            const totalResult = total1 - total2;
+
+            displayResult(totalResult, 'subtract');
+        });
+
+        document.getElementById('divide').addEventListener('click', function() {
+            const feet1 = parseFloat(document.getElementById('feet1').value);
+            const inches1 = parseFloat(document.getElementById('inches1').value);
+            const numerator1 = parseFloat(document.getElementById('num1').value);
+            const denominator1 = parseFloat(document.getElementById('den1').value);
+
+            const feetDivisor = parseFloat(document.getElementById('feetDivisor').value);
+            const inchesDivisor = parseFloat(document.getElementById('inchesDivisor').value);
+            const numeratorDivisor = parseFloat(document.getElementById('numDivisor').value);
+            const denominatorDivisor = parseFloat(document.getElementById('denDivisor').value);
+
+            const total1 = toTotalInches(feet1, inches1, numerator1, denominator1);
+            const totalDivisor = toTotalInches(feetDivisor, inchesDivisor, numeratorDivisor, denominatorDivisor);
+
+            // Prevent division by zero
+            if (totalDivisor === 0) {
+                document.getElementById('result').textContent = "Error: Division by zero";
+                return;
+            }
+
+            const totalResult = total1 / totalDivisor;
+
+            displayResult(totalResult, 'divide');
+        });
+    </script>
+</body>
+</html>
